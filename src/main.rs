@@ -6,18 +6,18 @@ extern crate time;
 use std::path::Path;
 
 use sdl2::event::{Event};
-// use sdl2::surface::{Surface};*/
 use sdl2::pixels::Color;
 
 use sdl2::render::Renderer;
-// use sdl2_ttf::Font;*/
+use sdl2::rect::Point;
+
+use sdl2_gfx::primitives::DrawRenderer;
 use time::Tm;
 
 mod game{
     pub mod entity;
 }
 use game::entity::Entity;
-// use std::ops::Add;*/
 
 fn draw_fps(prev: &mut Tm, renderer: &mut Renderer, font: &sdl2_ttf::Font){
     let timespec = time::now()-*prev;
@@ -44,14 +44,14 @@ fn main() {
     let mut tdiff = time::now();
 
     let mut ev = Vec::<Entity>::new();
-    for i in 1..256{
-        let mut e = Entity::new(0, (200.0,i as f32*2.0));
-        e.direction(i as f32 * 3.0);
+    for i in 1..2{
+		let mut e = Entity::new(0, (5,i));
+		e.move_to(9,i+3);
         ev.push(e);
     }
 
     'event : loop {
-        renderer.set_draw_color(Color::RGB(0,0,0));
+        renderer.set_draw_color(Color::RGB(0,50,100));
         renderer.clear();
 
         draw_fps(&mut tdiff, &mut renderer, &font);

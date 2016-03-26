@@ -1,20 +1,55 @@
 extern crate sdl2;
 extern crate sdl2_gfx;
 
-use std::ops::Add;
+use std::ops::*;
 use sdl2::render::Renderer;
 use sdl2::pixels::Color;
 
+use std::f32::consts::PI;
+
 use sdl2_gfx::primitives::DrawRenderer;
 
-pub struct Point<T: Add>{
+pub struct Point<T: Add + Mul + Sub>{
     x: T,
     y: T
 }
 
+impl Point<f32>{
+	pub fn manhattan(&self, target: Point<f32>) -> f32{
+		(self.x-target.x).abs() + (self.y-target.y).abs()
+	}
+
+	pub fn multiply(&self, value: f32) -> Point<f32>{
+		Point{
+			x:self.x*value,
+			y:self.y*value
+		}
+	}
+}
+
+impl Point<i32>{
+	pub fn manhattan(&self, target: Point<f32>) -> f32{
+		(self.x as f32-target.x).abs() + (self.y as f32-target.y).abs()
+	}
+
+	pub fn multiply(&self, value: f32) -> Point<f32>{
+		Point{
+			x:self.x as f32*value,
+			y:self.y as f32*value
+		}
+	}
+}
+
+
+
+// TODO: Target grid location
+// TODO: Grid
+// TODO: Buildings
+// TODO: Faction
 #[allow(dead_code)]
 pub struct Entity{
     id: i32,
+    grid_position: Point<i32>,
     position: Point<f32>,
     direction: f32,
     speed: f32,
@@ -22,37 +57,65 @@ pub struct Entity{
 }
 
 impl Entity{
-    pub fn new(id: i32, position: (f32, f32)) -> Entity{
+    pub fn new(id: i32, position: (i32, i32)) -> Entity{
         Entity{
             id:id,
-            position:
+            grid_position:
                 Point{
                     x:position.0,
                     y:position.1
+                },
+            position:
+                Point{
+                    x:position.0 as f32*50.0,
+                    y:position.1 as f32*50.0
                 },
             direction:0.0,
             speed:2.0,
             life: 0.9
         }
     }
+
+    fn angle(xo: f32, yo: f32, xe: f32, ye: f32) -> f32{
+        let dx = xe - xo;
+        let dy = ye - yo;
+        let mut a = dy.atan2(dx);
+        while a < 0.0 {
+            a += PI * 2.0;
+        }
+		a
+    }
+
     pub fn direction(&mut self, d: f32){
         self.direction = d;
     }
 
+	pub fn move_to(&mut self, x:i32, y:i32){
+		self.grid_position.x = x;
+		self.grid_position.y = y;
+	}
+
     pub fn update(&mut self){
-        self.position.x += self.direction.to_radians().cos() * self.speed;
-        self.position.y += self.direction.to_radians().sin() * self.speed;
-        self.direction += 2.0;
-        self.life=self.direction/10.0;
+		let dist = self.position.manhattan(self.grid_position.multiply(50.0));
+		if dist > 1.0{
+		       self.direction = Entity::angle(self.position.x, self.position.y, self.grid_position.x as f32*50.0, self.grid_position.y as f32*50.0).to_degrees();
+			   /*self.position.x += self.direction.to_radians().cos() * self.speed;
+			   self.position.y += self.direction.to_radians().sin() * self.speed;*/
+			   self.position.x += (self.grid_position.x as f32*50.0 - self.position.x)/20.0;
+			   self.position.y += (self.grid_position.y as f32*50.0-self.position.y)/20.0;
+		} else {
+			self.position.x = self.grid_position.x as f32*50.0;
+			self.position.y = self.grid_position.y as f32*50.0;
+		}
     }
 
     pub fn render(&mut self, renderer: &mut Renderer){
-        for i in 10..12 {
+        for i in 8..10 {
             renderer.arc(self.position.x as i16, self.position.y as i16, i, self.direction as i16, (self.direction+self.life*360.0) as i16, Color::RGB(180,0,0)).unwrap();
         }
-        renderer.circle(self.position.x as i16, self.position.y as i16, 8, Color::RGB(255,255,255)).unwrap();
-        renderer.arc(self.position.x as i16, self.position.y as i16, 13, self.direction as i16-15, self.direction as i16+15, Color::RGB(0,255,0)).unwrap();
-        renderer.arc(self.position.x as i16, self.position.y as i16, 14, self.direction as i16-10, self.direction as i16+10, Color::RGB(0,255,0)).unwrap();
-        renderer.arc(self.position.x as i16, self.position.y as i16, 15, self.direction as i16-5, self.direction as i16+5, Color::RGB(0,255,0)).unwrap();
+        renderer.circle(self.position.x as i16, self.position.y as i16, 6, Color::RGB(255,255,255)).unwrap();
+        renderer.arc(self.position.x as i16, self.position.y as i16, 10, self.direction as i16-15, self.direction as i16+15, Color::RGB(0,255,0)).unwrap();
+        renderer.arc(self.position.x as i16, self.position.y as i16, 11, self.direction as i16-10, self.direction as i16+10, Color::RGB(0,255,0)).unwrap();
+        renderer.arc(self.position.x as i16, self.position.y as i16, 12, self.direction as i16-5, self.direction as i16+5, Color::RGB(0,255,0)).unwrap();
     }
 }
