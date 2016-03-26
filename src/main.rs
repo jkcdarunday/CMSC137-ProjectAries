@@ -45,7 +45,7 @@ fn main() {
 
     let mut ev = Vec::<Entity>::new();
     for i in 1..2{
-		let mut e = Entity::new(0, (5,i));
+		let mut e = Entity::new(0, 5, i, 25);
 		e.move_to(9,i+3);
         ev.push(e);
     }
