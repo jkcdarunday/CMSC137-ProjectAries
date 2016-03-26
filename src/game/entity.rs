@@ -114,8 +114,8 @@ impl Entity{
             renderer.arc(self.position.x as i16, self.position.y as i16, i, self.direction as i16, (self.direction+self.life*360.0) as i16, Color::RGB(180,0,0)).unwrap();
         }
         renderer.circle(self.position.x as i16, self.position.y as i16, 6, Color::RGB(255,255,255)).unwrap();
-        renderer.arc(self.position.x as i16, self.position.y as i16, 10, self.direction as i16-15, self.direction as i16+15, Color::RGB(0,255,0)).unwrap();
-        renderer.arc(self.position.x as i16, self.position.y as i16, 11, self.direction as i16-10, self.direction as i16+10, Color::RGB(0,255,0)).unwrap();
-        renderer.arc(self.position.x as i16, self.position.y as i16, 12, self.direction as i16-5, self.direction as i16+5, Color::RGB(0,255,0)).unwrap();
+        renderer.arc(self.position.x as i16, self.position.y as i16, 10, self.direction as i16-10, self.direction as i16+10, Color::RGB(0,255,0)).unwrap();
+        renderer.arc(self.position.x as i16, self.position.y as i16, 11, self.direction as i16-6, self.direction as i16+6, Color::RGB(0,255,0)).unwrap();
+        renderer.arc(self.position.x as i16, self.position.y as i16, 12, self.direction as i16-2, self.direction as i16+2, Color::RGB(0,255,0)).unwrap();
     }
 }
