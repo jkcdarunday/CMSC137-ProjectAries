@@ -95,16 +95,6 @@ impl Entity {
     }
 
     pub fn render(&mut self, renderer: &mut Renderer) {
-        // Render life
-        for i in 8..10 {
-            renderer.arc(self.position.x as i16,
-                         self.position.y as i16,
-                         i,
-                         self.direction as i16,
-                         (self.direction + self.life * 360.0) as i16,
-                         Color::RGB(180, 0, 0))
-                    .unwrap();
-        }
         match self.e_type {
             EntityType::Unit => {
                 // Render life
@@ -152,6 +142,16 @@ impl Entity {
                         .unwrap();
             }
             EntityType::Building => {
+				// Render life
+				for i in 4..6 {
+					renderer.arc(self.position.x as i16,
+								 self.position.y as i16,
+								 i,
+								 self.direction as i16,
+								 (self.direction + self.life * 360.0) as i16,
+								 Color::RGB(180, 0, 0))
+							.unwrap();
+				}
                 let mut faction_color = Color::RGBA(0, 255, 0, 100);
                 if self.faction > 0 {
                     faction_color = Color::RGBA(255, 255, 255, 100);

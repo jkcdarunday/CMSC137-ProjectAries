@@ -30,25 +30,26 @@ fn draw_fps(prev: &mut Tm, renderer: &mut Renderer, font: &sdl2_ttf::Font) {
 }
 
 fn main() {
-	// Initialize contexts for SDL
+    // Initialize contexts for SDL
     let ctx = sdl2::init().unwrap();
     let video_ctx = ctx.video().unwrap();
+    let mouse_ctx = ctx.mouse();
     let ttf_ctx = sdl2_ttf::init().unwrap();
 
-	let font = ttf_ctx.load_font(Path::new("font.ttf"), 16).unwrap();
+    let font = ttf_ctx.load_font(Path::new("font.ttf"), 16).unwrap();
 
     let window = video_ctx.window("Aries", 800, 600).position_centered().opengl().build().unwrap();
     let mut renderer = window.renderer().accelerated().present_vsync().build().unwrap();
 
 
-	// Initialize grid
+    // Initialize grid
     let mut grid = Grid::new(25);
     for i in 1..5 {
         let eid = grid.new_entity(Unit, 5, i, 0);
         grid.move_entity(eid, 9 + ((-1) ^ i) + i * 2, i * 2 + 3);
 
-		let eid_e = grid.new_entity(Unit, 5, i, 1);
-		grid.move_entity(eid_e, 7 + ((-1) ^ i) + i * 2, i * 2 + 3);
+        let eid_e = grid.new_entity(Unit, 5, i, 1);
+        grid.move_entity(eid_e, 7 + ((-1) ^ i) + i * 2, i * 2 + 3);
     }
 
     for i in 1..20 {
@@ -63,7 +64,7 @@ fn main() {
     }
 
 
-	// Variables for event and FPS counting
+    // Variables for event and FPS counting
     let mut events = ctx.event_pump().unwrap();
     let mut tdiff = time::now();
 
@@ -76,12 +77,20 @@ fn main() {
         grid.render(&mut renderer);
         grid.update();
 
+        let (button, mx, my) = mouse_ctx.mouse_state();
+        grid.set_highlight((mx as f32 / 25.0).round() as i32,
+                           (my as f32 / 25.0).round() as i32,
+                           button.left());
+
         renderer.present();
 
-		// Poll for events
+        // Poll for events
         for event in events.poll_iter() {
             match event {
                 Event::Quit { .. } => break 'event,
+                Event::MouseButtonUp { .. } => {
+                    grid.move_entity_to_highlight(0);
+                }
                 _ => continue,
             }
         }

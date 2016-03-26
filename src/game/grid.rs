@@ -8,10 +8,12 @@ use sdl2::pixels::Color;
 use sdl2_gfx::primitives::DrawRenderer;
 
 use game::entity::{Entity, EntityType};
+use game::point::Point;
 
 pub struct Grid {
     grid_multiplier: i32,
     entities: Vec<Entity>,
+    highlight: (Point<i32>, bool),
 }
 
 impl Grid {
@@ -19,7 +21,14 @@ impl Grid {
         Grid {
             grid_multiplier: grid_multiplier,
             entities: Vec::<Entity>::new(),
+            highlight: (Point { x: -1, y: -1 }, false),
         }
+    }
+
+    pub fn set_highlight(&mut self, x: i32, y: i32, clicked: bool) {
+        self.highlight.0.x = x;
+        self.highlight.0.y = y;
+        self.highlight.1 = clicked;
     }
 
     pub fn draw_grid(&mut self, renderer: &mut Renderer) {
@@ -33,7 +42,23 @@ impl Grid {
 
         for x in 0..(800 / 25) + 1 {
             for y in 0..(600 / 25) + 1 {
-                renderer.circle(x * 25, y * 25, 1, Color::RGBA(255, 255, 255, 50)).unwrap();
+                // Handle mouse highlight circle
+                if self.highlight.0.x == x && self.highlight.0.y == y {
+                    let mut size = 3;
+                    if self.highlight.1 {
+                        size = 5;
+                    }
+                    renderer.circle((x * 25) as i16,
+                                    (y * 25) as i16,
+                                    size,
+                                    Color::RGBA(255, 255, 255, 100))
+                            .unwrap();
+                }
+                renderer.circle((x * 25) as i16,
+                                (y * 25) as i16,
+                                1,
+                                Color::RGBA(255, 255, 255, 50))
+                        .unwrap();
             }
         }
     }
@@ -51,6 +76,12 @@ impl Grid {
 
     pub fn move_entity(&mut self, id: usize, x: i32, y: i32) {
         self.entities.get_mut(id).unwrap().move_to(x, y);
+    }
+
+    pub fn move_entity_to_highlight(&mut self, id: usize) {
+        let x = self.highlight.0.x;
+        let y = self.highlight.0.y;
+        self.move_entity(id, x, y);
     }
 
     pub fn render(&mut self, renderer: &mut Renderer) {
