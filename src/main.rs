@@ -44,13 +44,6 @@ fn main() {
 
     // Initialize grid
     let mut grid = Grid::new(25);
-    /* for i in 1..30 {
-        let eid = grid.new_entity(Unit, 5, i, 0);
-        grid.move_entity(eid, 9 + ((-1) ^ i) + i * 2, i + 3);
-
-        let eid_e = grid.new_entity(Unit, 5, i, 1);
-        grid.move_entity(eid_e, 7 + ((-1) ^ i) + i * 2, i + 3);
-    }*/
 
 	for i in 1..32 {
 		for j in 1..24 {
