@@ -9,3 +9,7 @@ sdl2 = "0.16.1"
 sdl2_ttf = "0.16.1"
 sdl2_gfx = "0.8.1"
 time = "0.1.34"
+
+serde = "0.7"
+serde_macros = "0.7"
+bincode = "0.5"
