@@ -9,6 +9,8 @@ use sdl2_gfx::primitives::DrawRenderer;
 
 use game::entity::{Entity, EntityType};
 use game::point::Point;
+use game::network::Command::*;
+use game::network::CommandList;
 
 pub struct Grid {
     grid_multiplier: i32,
@@ -83,6 +85,16 @@ impl Grid {
         let y = self.highlight.0.y;
         self.move_entity(id, x, y);
     }
+
+	pub fn execute(&mut self, cs: CommandList){
+		for c in cs.commands{
+			match c{
+				Move(id, x, y) => {self.move_entity(id as usize, x as i32, y as i32);},
+				Life(id, life) => {},
+				Face(id, x, y) => {},
+			}
+		}
+	}
 
     pub fn render(&mut self, renderer: &mut Renderer) {
         self.draw_grid(renderer);

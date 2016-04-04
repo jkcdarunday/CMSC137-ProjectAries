@@ -1,9 +1,17 @@
+#![feature(custom_derive, plugin)]
+#![plugin(serde_macros)]
+
 extern crate sdl2;
 extern crate sdl2_ttf;
 extern crate sdl2_gfx;
 extern crate time;
 
+extern crate serde;
+extern crate bincode;
+
 use std::path::Path;
+use std::sync::mpsc::channel;
+use std::thread;
 
 use sdl2::event::Event;
 use sdl2::pixels::Color;
@@ -15,6 +23,7 @@ use time::Tm;
 mod game;
 
 use game::grid::Grid;
+use game::network::Network;
 use game::entity::EntityType::*;
 
 fn draw_fps(prev: &mut Tm, renderer: &mut Renderer, font: &sdl2_ttf::Font) {
@@ -41,16 +50,23 @@ fn main() {
     let window = video_ctx.window("Aries", 800, 600).position_centered().opengl().build().unwrap();
     let mut renderer = window.renderer().accelerated().present_vsync().build().unwrap();
 
+	let mut network = Network::new("0.0.0.0:6666");
+
+	let (tx, rx) = channel();
+	thread::spawn(move|| network.start("127.0.0.1:6665",tx));
+
 
     // Initialize grid
     let mut grid = Grid::new(25);
 
-	for i in 1..32 {
+	grid.new_entity(Unit, 0, 0, 0);
+
+	/*for i in 1..32 {
 		for j in 1..24 {
 			let id = grid.new_entity(Unit, 0, 0, 0);
 			grid.move_entity(id, i, j);
 		}
-	}
+	}*/
 
     for i in 1..20 {
         for j in 15..18 {
@@ -72,6 +88,11 @@ fn main() {
         renderer.set_draw_color(Color::RGB(0, 50, 100));
         renderer.clear();
 
+		match rx.try_recv() {
+			Ok(cs) => grid.execute(cs),
+			_ => {}
+		}
+
         draw_fps(&mut tdiff, &mut renderer, &font);
 
         grid.render(&mut renderer);
@@ -82,7 +103,7 @@ fn main() {
                            (my as f32 / 25.0).round() as i32,
                            button.left());
 		if button.left() {
-			for i in 0..713{
+			for i in 0..1{
 				grid.move_entity_to_highlight(i);
 			}
 		}
