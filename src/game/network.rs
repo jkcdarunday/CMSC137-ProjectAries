@@ -1,14 +1,7 @@
 use std::net::UdpSocket;
-use std::thread;
 use std::sync::mpsc::Sender;
-use std::net::ToSocketAddrs;
 
 use bincode::serde::*;
-
-pub struct Network{
-	con: UdpSocket,
-	buf: [u8; 1024]
-}
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Command{
@@ -22,23 +15,28 @@ pub struct CommandList{
 	pub commands: Vec<Command>
 }
 
-impl Network{
-	pub fn new(address: &str) -> Network{
-		Network{
+pub struct Client{
+	con: UdpSocket,
+	buf: [u8; 1024]
+}
+
+impl Client{
+	pub fn new(address: &str) -> Client{
+		Client{
 			con: UdpSocket::bind(address).unwrap(),
 			buf: [0u8; 1024]//Vec::with_capacity(1024)
 		}
 	}
 
 	pub fn start(&mut self, server: &str, tx: Sender<CommandList>){
-		self.con.connect(server);
-		self.con.send(b"Hello\n");
+		self.con.connect(server).unwrap();
+		self.con.send(b"Hello\n").unwrap();
 		loop{
 			self.con.recv(&mut self.buf).unwrap();
 			//println!("{:?}", self.buf);
 			let cs: CommandList = deserialize(&self.buf).unwrap();
 			println!("{:?}", cs);
-			tx.send(cs);
+			tx.send(cs).unwrap();
 		};
 	}
 }

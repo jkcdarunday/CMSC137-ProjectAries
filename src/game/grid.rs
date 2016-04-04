@@ -1,9 +1,7 @@
 extern crate sdl2;
-extern crate sdl2_gfx;
 
 use sdl2::render::Renderer;
 use sdl2::pixels::Color;
-
 
 use sdl2_gfx::primitives::DrawRenderer;
 

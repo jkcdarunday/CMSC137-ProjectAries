@@ -23,7 +23,7 @@ use time::Tm;
 mod game;
 
 use game::grid::Grid;
-use game::network::Network;
+use game::network::Client;
 use game::entity::EntityType::*;
 
 fn draw_fps(prev: &mut Tm, renderer: &mut Renderer, font: &sdl2_ttf::Font) {
@@ -50,7 +50,7 @@ fn main() {
     let window = video_ctx.window("Aries", 800, 600).position_centered().opengl().build().unwrap();
     let mut renderer = window.renderer().accelerated().present_vsync().build().unwrap();
 
-	let mut network = Network::new("0.0.0.0:6666");
+	let mut network = Client::new("0.0.0.0:6666");
 
 	let (tx, rx) = channel();
 	thread::spawn(move|| network.start("127.0.0.1:6665",tx));
