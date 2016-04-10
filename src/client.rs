@@ -12,6 +12,7 @@ extern crate bincode;
 use std::path::Path;
 use std::sync::mpsc::channel;
 use std::thread;
+use std::net::TcpStream;
 
 use sdl2::event::Event;
 use sdl2::pixels::Color;
@@ -23,7 +24,7 @@ use time::Tm;
 mod game;
 
 use game::grid::Grid;
-use game::network::Client;
+use game::network;
 use game::entity::EntityType::*;
 
 fn draw_fps(prev: &mut Tm, renderer: &mut Renderer, font: &sdl2_ttf::Font) {
@@ -50,10 +51,18 @@ fn main() {
     let window = video_ctx.window("Aries", 800, 600).position_centered().opengl().build().unwrap();
     let mut renderer = window.renderer().accelerated().present_vsync().build().unwrap();
 
-	let mut network = Client::new("0.0.0.0:6666");
+	let (u_tx, u_rx) = channel();
+	thread::spawn(move|| network::start_udp("0.0.0.0:6666", "127.0.0.1:6665",u_tx));
 
-	let (tx, rx) = channel();
-	thread::spawn(move|| network.start("127.0.0.1:6665",tx));
+	let tcp_connection = TcpStream::connect("127.0.0.1:6660").unwrap();
+
+	let (t_tx, t_tx_rx) = channel();
+	let mut tcp_sender = tcp_connection.try_clone().unwrap();
+	thread::spawn(move|| network::start_tcp_sender(&mut tcp_sender, t_tx_rx));
+
+	let (t_rx_tx, t_rx) = channel();
+	let mut tcp_receiver = tcp_connection.try_clone().unwrap();
+	thread::spawn(move|| network::start_tcp_receiver(&mut tcp_receiver, t_rx_tx));
 
 
     // Initialize grid
@@ -88,7 +97,12 @@ fn main() {
         renderer.set_draw_color(Color::RGB(0, 50, 100));
         renderer.clear();
 
-		match rx.try_recv() {
+		match u_rx.try_recv() {
+			Ok(cs) => grid.execute(cs),
+			_ => {}
+		}
+
+		match t_rx.try_recv() {
 			Ok(cs) => grid.execute(cs),
 			_ => {}
 		}
